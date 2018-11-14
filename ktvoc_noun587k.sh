@@ -12,8 +12,7 @@ TRAIN_DIR=/data/t2t_train/$PROBLEM/$MODEL-$HPARAMS
 mkdir -p $DATA_DIR $TMP_DIR $TRAIN_DIR
 
 # Generate data
-# * The following files should be stored in $TMP_DIR
-#   * Data: kt.voc.noun.587k.pairs
+# * The data is stored in a file named `ktvoc_noun587k.pairs` in $TMP_DIR.
 t2t-datagen \
   --t2t_usr_dir=$USR_DIR \
   --data_dir=$DATA_DIR \
