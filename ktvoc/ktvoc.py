@@ -2,6 +2,7 @@
 """KT-VOC Classification Problem."""
 
 import os
+import random
 from shutil import copyfile
 
 from tensor2tensor.data_generators import generator_utils
@@ -65,7 +66,9 @@ class KtvocNoun587k(text_problems.Text2ClassProblem):
         Yields:
             {"inputs": text, "label": int}
         """
-        data_path = os.path.join(tmp_dir, "kt.voc.noun.587k.pairs")
+        # dataset_filename = 'kt.voc.noun.587k'
+        dataset_filename = self.dataset_filename()
+        data_path = os.path.join(tmp_dir, f'{dataset_filename}.pairs')
         return text2class_txt_iterator(data_path,
                                        class_strs=self.class_labels(data_dir))
 
@@ -161,6 +164,32 @@ class KtvocNoun587k(text_problems.Text2ClassProblem):
 
     def eval_metrics(self):
         return [metrics.Metrics.ACC, metrics.Metrics.ACC_TOP5]
+
+
+@registry.register_problem
+class KtvocNoun72kShuffled(KtvocNoun587k):
+    @property
+    def approx_vocab_size(self):
+        """Approximate vocab size to generate. Only for VocabType.SUBWORD."""
+        return 2**12  # ~4k
+
+    def generate_encoded_samples(self, data_dir, tmp_dir, dataset_split):
+        self.create_class_labels(data_dir, tmp_dir)
+        generator = self.generate_samples_and_shuffle(
+            data_dir, tmp_dir, dataset_split)
+        encoder = self.get_or_create_vocab(data_dir, tmp_dir)
+        for sample in generator:
+            inputs = encoder.encode(sample["inputs"])
+            inputs.append(text_encoder.EOS_ID)
+            label = sample["label"]
+            yield {"inputs": inputs, "targets": [label]}
+
+    def generate_samples_and_shuffle(self, data_dir, tmp_dir, dataset_split):
+        generator = self.generate_samples(data_dir, tmp_dir, dataset_split)
+        samples = list(generator)
+        random.shuffle(samples)
+        for sample in samples:
+            yield sample
 
 
 def txt_line_iterator(txt_path):
