@@ -175,7 +175,7 @@ class KtvocNoun72kShuffled(KtvocNoun587k):
 
     def generate_encoded_samples(self, data_dir, tmp_dir, dataset_split):
         self.create_class_labels(data_dir, tmp_dir)
-        generator = self.generate_samples_and_shuffle(
+        generator = self.generate_shuffled_samples(
             data_dir, tmp_dir, dataset_split)
         encoder = self.get_or_create_vocab(data_dir, tmp_dir)
         for sample in generator:
@@ -184,12 +184,20 @@ class KtvocNoun72kShuffled(KtvocNoun587k):
             label = sample["label"]
             yield {"inputs": inputs, "targets": [label]}
 
-    def generate_samples_and_shuffle(self, data_dir, tmp_dir, dataset_split):
+    def generate_shuffled_samples(self, data_dir, tmp_dir, dataset_split):
         generator = self.generate_samples(data_dir, tmp_dir, dataset_split)
         samples = list(generator)
         random.shuffle(samples)
         for sample in samples:
             yield sample
+
+
+@registry.register_problem
+class KtvocNoun587kShuffled(KtvocNoun72kShuffled):
+    @property
+    def approx_vocab_size(self):
+        """Approximate vocab size to generate. Only for VocabType.SUBWORD."""
+        return 2**12  # ~4k
 
 
 def txt_line_iterator(txt_path):
