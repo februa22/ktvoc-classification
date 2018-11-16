@@ -32,4 +32,4 @@ t2t-trainer \
   --hparams_set=$HPARAMS \
   --worker_gpu=$WORKER_GPU \
   --output_dir=$TRAIN_DIR \
-  --hparams='batch_size=2048'
+  --hparams='batch_size=1024'
